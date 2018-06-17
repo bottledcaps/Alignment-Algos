@@ -1,6 +1,19 @@
-#string 1 is top, horizontal string
+"""	string 1 is top, horizontal string
+	to make it no gap penalty on the ends, just modify initialization to be all 0s 
+	and also make scoring return 0 on gap penalty if on the last row/column
+	
+	Could have paramters be an input, and make gap_penalty function inputted as well?
 
-def needleman_wunsch(string1, string2):
+	"""
+
+#for gap_penalty scoring go to below function, which is the default
+
+def default_gap_penalty(length): #always positive
+	if length <= 0:
+		return 0
+	return 2 + 1*(length-1)
+
+def needleman_wunsch(string1, string2, match_score = 1, mismatch_score = -1, gap_penalty = default_gap_penalty):
 	#strings 1 and 2 are input strings, presumably genomes
 	#have to determine rules?
 	length1 = len(string1)
@@ -16,7 +29,6 @@ def needleman_wunsch(string1, string2):
 		return A
 	def initialize_scoring_grid(x_length=(len(string1) + 1), y_length=(len(string2)+1)):
 		g = initialize_grid(None)
-		#g[0][0] = 0
 		for x in range(x_length):
 			g[0][x] = -gap_penalty(x)
 		for y in range(y_length):
@@ -25,21 +37,15 @@ def needleman_wunsch(string1, string2):
 	def print_grid(grid):
 		a = len(grid)
 		for x in range(a):
-			#if x != 0:
-			#	print(string2[x-1])
 			print(grid[x])
 	def sub_score(match):
 		if match:
-			return 1
+			return match_score
 		else:
-			return -1
-	def gap_penalty(length): #always positive
-		return 1 + 2*(length-1)
+			return mismatch_score
 	def score(y_loc, x_loc):
-		#return x_loc + y_loc
-		#Can't do nonlinear gap penalties yet
+		#Can do non-linear 
 		#DICTIONARIES: score is key, location is value
-
 		def calc_gaps():
 			gap_dict = {}
 			#go_down
@@ -67,41 +73,29 @@ def needleman_wunsch(string1, string2):
 
 		return max_key
 
-		"""calc_sub = g[y_loc-1][x_loc-1] + sub_score((string1[x_loc-1] == string2[y_loc-1]))
-		calc_go_down = g[y_loc-1][x_loc] - gap_penalty(1)
-		calc_go_right = g[y_loc][x_loc-1] - gap_penalty(1)
-
-		new_score = max(calc_sub, calc_go_down, calc_go_right)
-		if new_score == calc_sub:
-			path_grid[y_loc][x_loc] = 0
-		elif new_score == calc_go_down:
-			path_grid[y_loc][x_loc] = 1
-		elif new_score == calc_go_right:
-			path_grid[y_loc][x_loc] = -1
-
-		return new_score"""
-
 	def align_strings():
 		new_string1 = ''
 		new_string2 = ''
 		current_x = len(string1) 
 		current_y = len(string2)
 		while(path_grid[current_y][current_x] != None):
-			#print(current_y, current_x)
-			if path_grid[current_y][current_x] == 0:
+			#temporary
+			k = path_grid[current_y][current_x]
+
+			if k == 0:
 				new_string1 = string1[current_x-1] + new_string1
 				new_string2 = string2[current_y-1] + new_string2
 				current_y -= 1
 				current_x -= 1
-			elif path_grid[current_y][current_x] == 1:
-				new_string2 = string2[current_y-1] + new_string2
-				new_string1 = '-' + new_string1
-				current_y -= 1
-			elif path_grid[current_y][current_x] == -1:
-				new_string1 = string1[current_x - 1] + new_string1
-				new_string2 = '-' + new_string2
-				current_x -= 1
-		#print(current_y, current_x)
+			elif k > 0:
+
+				new_string2 = string2[current_y-k:current_y] + new_string2
+				new_string1 = k*'-' + new_string1
+				current_y -= k
+			elif k < 0:
+				new_string1 = string1[current_x - (-k):current_x] + new_string1
+				new_string2 = (-k)*'-' + new_string2
+				current_x -= (-k)
 		return new_string1, new_string2
 
 
@@ -114,17 +108,12 @@ def needleman_wunsch(string1, string2):
 		for x in range(length1):
 			g[y+1][x+1] = score(y+1, x+1)
 	new_string1, new_string2 = align_strings()
-	print_grid(g)
-	print()
-	print_grid(path_grid)
 	print(new_string1)
 	print(new_string2)
 
-	#print(string2[6], string1[6], string2[5], string1[5], string2[4], string1[4], string2[3], string1[3], string2[2], string1[2], string2[1], string1[2], string2[0], string1[1], string2[0], string1[0])
+	
 	return None
 
-
-	#return matrix_max, x_max, y_max
 	
 
 
